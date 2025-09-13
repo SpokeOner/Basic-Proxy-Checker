@@ -4,10 +4,9 @@ import queue
 import time
 from datetime import datetime
 
-# Prompt for thread amount
 thread_count = int(input("Enter thread amount: "))
 
-# Config
+
 INPUT_FILE = 'proxies.txt'
 INVALID_OUTPUT_FILE = 'invalid_proxies.txt'
 WATERMARK = 'For UHQ proxies | 1$/gb 4$/hr resi | visit strikeproxy.net'
@@ -15,17 +14,14 @@ GREEN = '\033[92m'
 RED = '\033[91m'
 RESET = '\033[0m'
 
-# Queues
 proxy_queue = queue.Queue()
 valid_proxies = []
 invalid_proxies = []
 
-# Load proxies into the queue
 with open(INPUT_FILE, 'r') as f:
     for line in f:
         proxy_queue.put(line.strip())
 
-# Proxy checker function
 def check_proxy():
     while not proxy_queue.empty():
         proxy = proxy_queue.get()
@@ -48,33 +44,29 @@ def check_proxy():
             invalid_proxies.append(proxy)
         proxy_queue.task_done()
 
-# Start threads
 threads = []
 for _ in range(thread_count):
     t = threading.Thread(target=check_proxy)
     threads.append(t)
     t.start()
 
-# Wait for all threads to finish
 for t in threads:
     t.join()
 
-# Finalize filename based on valid count and date
 valid_count = len(valid_proxies)
 date_str = datetime.now().strftime("%Y-%m-%d")
 VALID_OUTPUT_FILE = f'{valid_count:03}_proxies_{date_str}.txt'
 
-# Save valid proxies with watermark
 with open(VALID_OUTPUT_FILE, 'w') as f:
     f.write(WATERMARK + '\n')
     for proxy in valid_proxies:
         f.write(proxy + '\n')
     f.write(WATERMARK + '\n')
 
-# Save invalid proxies separately
 with open(INVALID_OUTPUT_FILE, 'w') as f:
     for proxy in invalid_proxies:
         f.write(proxy + '\n')
 
 print(f'\n✅ Completed! Valid proxies saved in: {VALID_OUTPUT_FILE}')
 print(f'❌ Invalid proxies saved in: {INVALID_OUTPUT_FILE}')
+
